@@ -3,7 +3,7 @@
 ## In this lab …
 
 - Setting up AWS CDK
-- Setting up REST API with Amazon API Gateway, Lambda, and DynamoDB
+- Setting up a Virtual Private Network
 
 ## Bootstrapping
 

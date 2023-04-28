@@ -2,20 +2,25 @@
 
 ## In this lab …
 
-- Setup development environment (local or Cloud9)
+- Setup development environment
 
 ## Local development setup
 
 For this workshop, we rely on a basic development setup, including:
 
 - [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
-- [Node.js / NPM](https://nodejs.org/en/)
+- [Node.js >= 16.x / NPM](https://nodejs.org/en/)
+- [python >= 3.10](http://python.org)
 - Editor (e.g. [Visual Studio Code](https://code.visualstudio.com/))
 - Terminal (e.g. [iTerm2](https://iterm2.com/) or PowerShell)
 
-Make sure you have installed and configured all dependencies on your computer. If you need to create a completely new development setup on your machine, then we recommend Cloud9 as a cloud-based development experience. Cloud9 works well with AWS and comes with all dependencies pre-installed.
+Make sure you have installed and configured all dependencies on your computer.
 
-If you can work with your already existing development setup, the AWS CLI needs access to your AWS account. To not override your default configuration, make sure you have configured your AWS CLI with a [named profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-profiles) for this workshop.
+If you can work with your already existing development setup, the AWS CLI needs
+access to your AWS account. To not override your default configuration, make
+sure you have configured your AWS CLI with a [named
+profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-profiles)
+for this workshop.
 
 ### Configuring a named profile for the AWS CLI
 
@@ -43,17 +48,6 @@ aws sts get-caller-identity
 ```
 
 ### AWS SSO 
-If you are using an AWS SSO managed account, please follow the instructions for [short-term credentials for the AWS CLI](https://aws.amazon.com/blogs/security/aws-single-sign-on-now-enables-command-line-interface-access-for-aws-accounts-using-corporate-credentials/).
-
-## Setting up Cloud9
-
-If you don't want to invest time setting up a locally running development environment, then just set up a Cloud9 environment.
-
-1. Log in to your AWS Console and go to [Cloud9](https://console.aws.amazon.com/cloud9/)
-2. Click on the button **Create environment**
-3. Choose a name (e.g. **Serverless Workshop**)
-4. Click on **Next step**
-5. Keep the default settings and click on **Next step**
-6. Scroll down and click on **Create environment**
-7. That's it. You should arrive in the Cloud9 editor.
-8. Enable hidden files in the file explorer. See [documentation](https://docs.aws.amazon.com/cloud9/latest/user-guide/tour-ide.html#tour-ide-environment).
+If you are using an AWS SSO managed account, please follow the instructions for
+[short-term credentials for the AWS
+CLI](https://aws.amazon.com/blogs/security/aws-single-sign-on-now-enables-command-line-interface-access-for-aws-accounts-using-corporate-credentials/).
