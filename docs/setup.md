@@ -26,7 +26,7 @@ for this workshop.
 
 1. Start the configuration by running:
 ```bash
-aws configure --profile serverless-workshop
+aws configure --profile compute-basics-workshop
 ```
 1. You will be one by one asked to provide your credentials for:
 ```
@@ -39,7 +39,7 @@ Default output format [None]
 
 1. To easen things in the following labs, set the AWS_PROFILE environment variable to your named profile:
 ```bash
-export AWS_PROFILE=serverless-workshop
+export AWS_PROFILE=compute-basics-workshop
 ```
 
 You should now be able to execute this command:

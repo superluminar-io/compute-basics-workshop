@@ -9,7 +9,7 @@
 
 ### 📝 Task
 
-Create a fresh AWS CDK app with Projen.
+Create a fresh AWS CDK app.
 
 ### 🔎 Hints
 
