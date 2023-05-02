@@ -59,6 +59,7 @@ Create a VPC with default settings.
 ### 🔎 Hints
 
 - [What is a VPC?](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
+- [CDK VPC Documentation](https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ec2/Vpc.html)
 
 ### 🗺  Step-by-Step Guide
 
@@ -94,12 +95,13 @@ Create a VPC with default settings.
 
 ### 📝 Task
 
-Disable public subnets, and NAT gateways, and limit number of availability zones.
+Disable public subnets and NAT gateways, set CIDR range, and limit number of availability zones.
 
 ### 🔎 Hints
 
 - [NAT Gateways](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html)
 - [NAT Gateway Pricing](https://aws.amazon.com/vpc/pricing/)
+- [CDK VPC Documentation](https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ec2/Vpc.html)
 - Limiting the number of AZs just limits the number of subnets. This is for training purposes.
 
 
