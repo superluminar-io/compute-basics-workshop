@@ -13,5 +13,13 @@ class Lab1Stack(Stack):
         ec2.Vpc(
             self,
             "Lab1VPC",
+            max_azs=1,
             ip_addresses=ec2.IpAddresses.cidr("10.0.0.0/16"),
+            subnet_configuration=[
+                ec2.SubnetConfiguration(
+                    name="Private",
+                    subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
+                    cidr_mask=17
+                )
+            ]
         )
