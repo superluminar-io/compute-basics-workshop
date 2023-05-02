@@ -1,7 +1,7 @@
 {
-  "name": "serverless-workshop",
+  "name": "compute-workshop",
   "version": "1.0.0",
-  "description": "Hands-on AWS serverless workshop for beginners",
+  "description": "Hands-on AWS compute workshop for beginners",
   "workspaces": [
     "packages/*"
   ],

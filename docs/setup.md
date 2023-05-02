@@ -22,6 +22,12 @@ sure you have configured your AWS CLI with a [named
 profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-profiles)
 for this workshop.
 
+CDK will automatically pick up a region from the default region you configure. If you have no region configured, the default will be `us-east-1`. You can setup the region in different ways, the easiest for this workshop is to use an environment variable. Just run
+```bash
+export AWS_REGION=eu-west-1
+```
+to configure the `eu-west-1` Ireland region. Please adjust the region for your needs.
+
 ### Configuring a named profile for the AWS CLI
 
 1. Start the configuration by running:
@@ -35,7 +41,7 @@ AWS Secret Access Key [None]
 Default region name [None]
 Default output format [None]
 ```
-⚠️ Make sure you use **eu-central-1** as your default region.
+⚠️ Make sure you use **eu-west-1** as your default region.
 
 1. To easen things in the following labs, set the AWS_PROFILE environment variable to your named profile:
 ```bash

@@ -1,4 +1,4 @@
-# Serverless Workshop
+# Compute Workshop
 
 ## Welcome
 
