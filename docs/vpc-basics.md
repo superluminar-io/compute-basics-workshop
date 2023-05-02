@@ -92,9 +92,39 @@ Create a VPC with default settings.
 
 1. Task: Discuss the resources and how they work with your colleagues briefly.
 
+### 📝 Task
+
+Disable public subnets, and NAT gateways, and limit number of availability zones.
+
+### 🔎 Hints
+
+- [NAT Gateways](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html)
+- [NAT Gateway Pricing](https://aws.amazon.com/vpc/pricing/)
+- Limiting the number of AZs just limits the number of subnets. This is for training purposes.
 
 
+### 🗺  Step-by-Step Guide
+
+1. Open `lab1_stack.py`
+
+1. Change your instantiation of the VPC to 
+   ```python
+   ```
+1. Deploy your changes.
+1. You will see, this does not work out easily, can you spot why?
+   <details>
+   <summary>Spoil me please</summary>
+   When you create a VPC without any additional subnet settings, CDK will distribute the available CIDR ranges evenly
+   between the subnets. As there are already six subnets and you are changing this to just one, the new subnet spans the
+   whole VPC CIDR range and hence is overlapping with the already existing subnets. CDK/CloudFormation will always
+   create new resources before it deletes old ones. Drastic ways to work around this is to either delete the entire
+   stack via <code>npx cdk destroy</code> or delete the resources in question from your stack, deploy, and then add the
+   new resources. Both of the solutions only work as long as your subnets are empty. You can also adjust the CIDR ranges
+   of your new subnets and configure them appropriately. This is why planning network structure is critical.
+   </details>
+1. For our example, just delete the stack using `npx cdk destroy` and then deploy again.
+1. What has changed in your VPC? Can resources inside the VPC download files from the internet and S3?
 
 ---
 
-You can find the complete implementation of this lab [here](https://github.com/superluminar-io/serverless-workshop/tree/main/packages/lab1).
+You can find the complete implementation of this lab [here](https://github.com/superluminar-io/compute-basics-workshop/tree/main/packages/lab1).
