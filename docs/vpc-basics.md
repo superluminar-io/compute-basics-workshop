@@ -109,6 +109,19 @@ Disable public subnets, and NAT gateways, and limit number of availability zones
 
 1. Change your instantiation of the VPC to 
    ```python
+   ec2.Vpc(
+            self,
+            "Lab1VPC",
+            max_azs=1,
+            ip_addresses=ec2.IpAddresses.cidr("10.0.0.0/16"),
+            subnet_configuration=[
+                ec2.SubnetConfiguration(  # private subnet
+                    name="Private",
+                    subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
+                    cidr_mask=17
+                )
+            ]
+        )
    ```
 1. Deploy your changes.
 1. You will see, this does not work out easily, can you spot why?
