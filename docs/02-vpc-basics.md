@@ -17,13 +17,13 @@ Create a fresh AWS CDK app.
 
 ### 🗺  Step-by-Step Guide
 
-1. Create a new folder `lab1`:
+1. Create a new folder `workshop`:
    ```bash
-   mkdir lab1
+   mkdir workshop
    ```
 1. Step into the folder:
    ```bash
-   cd lab1
+   cd workshop
    ```
 1. Init AWS CDK with Projen:
    ```bash
@@ -31,9 +31,9 @@ Create a fresh AWS CDK app.
    ```
 1. Go to the file `./app.py`. Scroll down and find this line:
   ```python
-  Lab1Stack(app, 'Lab1Stack');
+  WorkshopStack(app, 'WorkshopStack');
   ```
-  Rename `my-stack-dev` to something unique (e.g. append your name).
+  Rename `WorkshopStack` to something unique (e.g. append your name).
 1. Deploy the CloudFormation stack:
    ```bash
    npx cdk deploy
@@ -65,9 +65,9 @@ Create a VPC with default settings.
 
 1. Open 
    ```bash
-   lab1/lab1_stack.py
+   workshop/workshop_stack.py
    ```
-1. Add the following code to the constructor of Lab1Stack:
+1. Add the following code to the constructor of `WorkshopStack`:
    ```python
    ec2.Vpc(self, "VPC")
    ```
@@ -107,13 +107,13 @@ Disable public subnets and NAT gateways, set CIDR range, and limit number of ava
 
 ### 🗺  Step-by-Step Guide
 
-1. Open `lab1_stack.py`
+1. Open `workshop_stack.py`
 
 1. Change your instantiation of the VPC to 
    ```python
    ec2.Vpc(
             self,
-            "Lab1VPC",
+            "WorkshopVPC",
             max_azs=1,
             ip_addresses=ec2.IpAddresses.cidr("10.0.0.0/16"),
             subnet_configuration=[
