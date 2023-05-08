@@ -112,18 +112,18 @@ Disable public subnets and NAT gateways, set CIDR range, and limit number of ava
 1. Change your instantiation of the VPC to 
    ```python
    ec2.Vpc(
-            self,
-            "WorkshopVPC",
-            max_azs=1,
-            ip_addresses=ec2.IpAddresses.cidr("10.0.0.0/16"),
-            subnet_configuration=[
-                ec2.SubnetConfiguration(
-                    name="Private",
-                    subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
-                    cidr_mask=17
-                )
-            ]
-        )
+       self,
+       "WorkshopVPC",
+       max_azs=2,
+       ip_addresses=ec2.IpAddresses.cidr("10.0.0.0/16"),
+       subnet_configuration=[
+           ec2.SubnetConfiguration(
+               name="Private",
+               subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
+               cidr_mask=20
+           )
+       ]
+   )
    ```
 1. Deploy your changes.
 1. You will see, this does not work out easily, can you spot why?
@@ -138,7 +138,10 @@ Disable public subnets and NAT gateways, set CIDR range, and limit number of ava
    of your new subnets and configure them appropriately. This is why planning network structure is critical.
    </details>
 1. For our example, just delete the stack using `npx cdk destroy` and then deploy again.
-1. What has changed in your VPC? Can resources inside the VPC download files from the internet and S3?
+
+### Questions
+1. What has changed in your VPC?
+1. Can resources inside the VPC download files from the internet and S3?
 
 ---
 

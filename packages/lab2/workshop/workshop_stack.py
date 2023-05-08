@@ -30,16 +30,6 @@ class WorkshopStack(Stack):
                 )
             ]
         )
-        ec2.Instance(
-            self,
-            "WorkshopInstance",
-            instance_type=ec2.InstanceType("t2.micro"),
-            machine_image=ec2.MachineImage.latest_amazon_linux2(),
-            vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(
-                subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
-            ),
-        )
         nginx_instance = ec2.Instance(
             self,
             "NginxInstance",
