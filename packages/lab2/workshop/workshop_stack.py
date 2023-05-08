@@ -76,3 +76,7 @@ class WorkshopStack(Stack):
             port=80,
             targets=[nginx_target],
         )
+
+        nginx_instance.connections.allow_from(
+            alb, ec2.Port.tcp(80), "Allow inbound HTTP access from ALB"
+        )
