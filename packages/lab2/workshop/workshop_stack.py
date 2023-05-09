@@ -30,6 +30,7 @@ class WorkshopStack(Stack):
                 )
             ]
         )
+
         nginx_instance = ec2.Instance(
             self,
             "NginxInstance",
@@ -49,18 +50,15 @@ class WorkshopStack(Stack):
             vpc=vpc,
             internet_facing=True,
         )
-
         listener = alb.add_listener(
             "WorkshopListener",
             port=80,
             open=True,
         )
-
         nginx_target = targets.InstanceTarget(
             nginx_instance,
             port=80,
         )
-
         listener.add_targets(
             "WorkshopTarget",
             port=80,
