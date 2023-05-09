@@ -54,6 +54,7 @@ class WorkshopStack(Stack):
             vpc_subnets=ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
             ),
+            allow_all_outbound=False,
             instance_type=ec2.InstanceType("t2.micro"),
             machine_image=ec2.MachineImage().lookup(
                 name="bitnami-nginx-1.23.3-22-r21-linux-debian-11-x86_64-hvm-ebs-nami",  # noqa: E501
