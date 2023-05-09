@@ -1,4 +1,5 @@
 from aws_cdk import (
+    Duration,
     Stack,
     aws_autoscaling as autoscaling,
     aws_ec2 as ec2,
@@ -31,6 +32,29 @@ class WorkshopStack(Stack):
             ]
         )
 
+        nginx_autscaling_group = autoscaling.AutoScalingGroup(
+            self,
+            "WorkshopASG",
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
+            ),
+            allow_all_outbound=False,
+            instance_type=ec2.InstanceType("t2.micro"),
+            machine_image=ec2.MachineImage().lookup(
+                name="bitnami-nginx-1.23.3-22-r21-linux-debian-11-x86_64-hvm-ebs-nami",  # noqa: E501
+            ),
+            min_capacity=1,
+            max_capacity=2,
+            health_check=autoscaling.HealthCheck.elb(
+                grace=Duration.seconds(60),
+            ),
+        )
+        nginx_autscaling_group.scale_on_cpu_utilization(
+            "WorkshopScaleOnCPU",
+            target_utilization_percent=50,
+        )
+
         alb = elbv2.ApplicationLoadBalancer(
             self,
             "WorkshopALB",
@@ -47,25 +71,6 @@ class WorkshopStack(Stack):
             port=80,
         )
 
-        nginx_autscaling_group = autoscaling.AutoScalingGroup(
-            self,
-            "WorkshopASG",
-            vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(
-                subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
-            ),
-            allow_all_outbound=False,
-            instance_type=ec2.InstanceType("t2.micro"),
-            machine_image=ec2.MachineImage().lookup(
-                name="bitnami-nginx-1.23.3-22-r21-linux-debian-11-x86_64-hvm-ebs-nami",  # noqa: E501
-            ),
-            min_capacity=1,
-            max_capacity=2,
-        )
-        nginx_autscaling_group.scale_on_cpu_utilization(
-            "WorkshopScaleOnCPU",
-            target_utilization_percent=50,
-        )
         nginx_autscaling_group.attach_to_application_target_group(
             nginx_target_group
         )
