@@ -1,0 +1,9 @@
+{
+  "availability-zones:account=084274240787:region=eu-west-1": [
+    "eu-west-1a",
+    "eu-west-1b",
+    "eu-west-1c"
+  ],
+  "ami:account=084274240787:filters.image-type.0=machine:filters.name.0=bitnami-nginx-1.23.4-4-r07-linux-debian-11-x86_64-hvm-ebs-nami-f5774628-e459-457a-b058-3b513caefdee:filters.state.0=available:region=eu-west-1": "ami-008f688b2bc759109",
+  "ami:account=084274240787:filters.image-type.0=machine:filters.name.0=bitnami-nginx-1.23.3-22-r21-linux-debian-11-x86_64-hvm-ebs-nami:filters.state.0=available:region=eu-west-1": "ami-056e27b94e554ab5f"
+}
