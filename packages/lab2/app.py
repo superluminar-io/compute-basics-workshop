@@ -4,7 +4,8 @@ import os
 import aws_cdk as cdk
 
 # from workshop.workshop_stack import WorkshopStack
-from workshop.workshop_autoscaling_stack import WorkshopStack
+# from workshop.workshop_autoscaling_stack import WorkshopStack
+from workshop.workshop_ssm_stack import WorkshopStack
 
 
 app = cdk.App()
