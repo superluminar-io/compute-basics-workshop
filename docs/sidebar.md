@@ -2,6 +2,7 @@
 - [Lab 0 - Setup](/00-setup)
 - [Lab 1 - VPC Basics](/01-vpc-basics)
 - [Lab 2 - EC2](/02-ec2)
+- [Lab 3 - S3](/03-s3)
 - [Lab 3 - Mini GameDay](/mini-gameday)
 - [Lab 4 - Messaging](/messaging)
 - [What’s next?](/next)
