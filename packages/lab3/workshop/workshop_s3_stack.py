@@ -1,4 +1,5 @@
 from aws_cdk import (
+    CfnOutput,
     Stack,
     aws_ec2 as ec2,
     aws_iam as iam,
@@ -42,6 +43,10 @@ class WorkshopStack(Stack):
             "WorkshopEC2MessageEndpoint",
             service=ec2.InterfaceVpcEndpointAwsService.EC2_MESSAGES,
         )
+        vpc.add_gateway_endpoint(
+            "WorkshopS3Endpoint",
+            service=ec2.GatewayVpcEndpointAwsService.S3,
+        )
 
         instance_role = iam.Role(
             self,
@@ -73,4 +78,19 @@ class WorkshopStack(Stack):
             encryption=s3.BucketEncryption.S3_MANAGED,
             versioned=True,
         )
+        CfnOutput(
+            self,
+            "WorkshopBucketName",
+            value=s3_bucket.bucket_name,
+        )
         s3_bucket.grant_read_write(instance_role)
+        instance_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:ListAllMyBuckets",
+                ],
+                resources=[
+                    "*",
+                ],
+            )
+        )
