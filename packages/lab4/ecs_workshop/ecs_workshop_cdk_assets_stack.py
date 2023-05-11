@@ -117,4 +117,8 @@ class EcsWorkshopStack(Stack):
             desired_count=2,
             public_load_balancer=True,
             listener_port=80,
+            task_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PUBLIC,
+            ),
+            assign_public_ip=True,
         )
