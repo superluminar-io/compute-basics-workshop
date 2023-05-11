@@ -30,10 +30,11 @@ Create a fresh AWS CDK app.
    npx cdk init app --language=python
    ```
 1. Go to the file `./app.py`. Scroll down and find this line:
-  ```python
-  WorkshopStack(app, 'WorkshopStack');
-  ```
-  Rename `WorkshopStack` to something unique (e.g. append your name).
+   ```python
+   WorkshopStack(app, 'WorkshopStack');
+   ```
+   Change the name (the string `WorkshopStack`) to something unique (e.g. append your name).
+
 1. Deploy the CloudFormation stack:
    ```bash
    npx cdk deploy
