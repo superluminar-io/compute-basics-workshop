@@ -187,7 +187,7 @@ Use a CDK `DockerImageAsset` to let CDK manage the bundling.
 
 ### 📝 Task
 
-Create an ECR cluster with Fargate support
+Create an ECR cluster with Fargate support.
 
 ### 🔎 Hints
 - [What is Fargate?](https://docs.aws.amazon.com/AmazonECS/latest/userguide/what-is-fargate.html)
@@ -221,6 +221,7 @@ Create an ECR cluster with Fargate support
    properties.
    ```python
    ```
+   <!-- TODO: Is there code missing? -->
 
 1. Deploy your changes and go to the [ECS console task definitions](https://eu-west-1.console.aws.amazon.com/ecs/v2/task-definitions).
    Lets deploy our task. Select the task definition you just created and click "Deploy" -> "Run task". Choose your ECS cluster,
@@ -258,7 +259,7 @@ Create an ECR cluster with Fargate support
      and deploy before continuing to run your task.
    Now click "Create" at the bottom.
 
-1. From the list of tasks in the cluster, you can now clock on your task to see more details. Hit refresh a couple of
+1. From the list of tasks in the cluster, you can now click on your task to see more details. Hit refresh a couple of
    times at the top right of the page. You can observe the task's last status and also its desired status. When the task
    stopped, check the logs in the "Logs" tab. There should be "Hello, world!" printed to the logs.
 
@@ -295,4 +296,4 @@ Delete and restore your object using bucket versioning.
 
 ---
 
-You can find the complete implementation of this lab [here](https://github.com/superluminar-io/compute-basics-workshop/tree/main/packages/lab2).
+You can find the complete implementation of this lab [here](https://github.com/superluminar-io/compute-basics-workshop/tree/main/packages/lab4).
