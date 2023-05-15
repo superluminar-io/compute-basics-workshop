@@ -109,7 +109,7 @@ class EcsWorkshopStack(Stack):
             )
         )
 
-        ecs_patterns.ApplicationLoadBalancedFargateService(
+        service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
             "WorkshopService",
             cluster=cluster,
@@ -121,4 +121,12 @@ class EcsWorkshopStack(Stack):
                 subnet_type=ec2.SubnetType.PUBLIC,
             ),
             assign_public_ip=True,
+        )
+
+        service.service.auto_scale_task_count(
+            max_capacity=4,
+            min_capacity=2,
+        ).scale_on_cpu_utilization(
+            "CpuScaling",
+            target_utilization_percent=50,
         )

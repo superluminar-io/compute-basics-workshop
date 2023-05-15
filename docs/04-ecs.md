@@ -153,6 +153,10 @@ Use a CDK `DockerImageAsset` to let CDK manage the bundling.
    ```bash
    ecs_workshop/ecs_workshop_stack.py
    ```
+   and save it as
+   ```python
+   ecs_workshop/ecs_workshop_cdk_assets_stack.py
+   ```
 
 1. You can remove remove your repository and the `CfnOutput`, CDK will manage this for you.
 
@@ -180,50 +184,7 @@ Use a CDK `DockerImageAsset` to let CDK manage the bundling.
    b7e0fa7bfe7f: Pushed
    ```
 
-### Questions
-1. Where did your image go?
-
-## Using Amazon Elastic Container Service (ECS)
-
-### 📝 Task
-
-Create an ECR cluster with Fargate support.
-
-### 🔎 Hints
-- [What is Fargate?](https://docs.aws.amazon.com/AmazonECS/latest/userguide/what-is-fargate.html)
-- [CDK ECS documentation](https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ecs/README.html)
-
-### 🗺 Step-by-Step Guide
-1. Open
-   ```bash
-   ecs_workshop/ecs_workshop_stack.py
-   ```
-
-1. Create an ECS cluster:
-   ```python
-   cluster = ecs.Cluster(
-       self,
-       "WorkshopCluster",
-       vpc=vpc,
-   )
-   ```
-   This cluster will have the capability to run Fargate tasks.
-
-1. Deploy your changes via
-   ```bash
-   npx cdk deploy
-   ```
-
-1. You can now check what you deployed in the [ECS web console](https://eu-west-1.console.aws.amazon.com/ecs/v2/clusters).
-
-1. So we have a cluster now, but we would also like to run some application on it. Lets start by running the container
-   that you just build. For this we need a task definition that specifies resources needed, networking and some more
-   properties.
-   ```python
-   ```
-   <!-- TODO: Is there code missing? -->
-
-1. Deploy your changes and go to the [ECS console task definitions](https://eu-west-1.console.aws.amazon.com/ecs/v2/task-definitions).
+1. 1. Deploy your changes and go to the [ECS console task definitions](https://eu-west-1.console.aws.amazon.com/ecs/v2/task-definitions).
    Lets deploy our task. Select the task definition you just created and click "Deploy" -> "Run task". Choose your ECS cluster,
    then select "Launch type". You can now select "FARGATE" from the drop-down. Other options would be EC2 or EXTERNAL (ECS Anywhere).
    We do not have any EC2 instances or external servers registered to our cluster, so we go with FARGATE.
@@ -261,36 +222,110 @@ Create an ECR cluster with Fargate support.
 
 1. From the list of tasks in the cluster, you can now click on your task to see more details. Hit refresh a couple of
    times at the top right of the page. You can observe the task's last status and also its desired status. When the task
-   stopped, check the logs in the "Logs" tab. There should be "Hello, world!" printed to the logs.
+   stopped, check the logs in the "Logs" tab. There should be "Hello, world!" printed to the logs.\
 
-## Playing with Versioning
+### Questions
+1. Where did your image go?
+
+## Using Amazon Elastic Container Service (ECS)
 
 ### 📝 Task
 
-Use an ECS pattern to deploy a web server.
+Create ECS service and run public nginx in a service.
 
 ### 🔎 Hints
-- [What is object versioning?](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html)
+- [What are ECS services](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html)
+- [CDK ECS patterns documentation](https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ecs_patterns/README.html)
 
 ### 🗺 Step-by-Step Guide
+1. Open
+   ```bash
+   ecs_workshop/ecs_workshop_cdk_assets_stack.py
+   ```
+1. We can now use the ECS pattern library to create a load balanced Fargate service. Add this at the end of your
+   constructor:
+   ```python
+   nginx_task_definition = ecs.FargateTaskDefinition(
+       self,
+       "NginxTask",
+       cpu=256,
+       memory_limit_mib=512,
+   )
+   nginx_container = nginx_task_definition.add_container(
+       "NginxContainer",
+       image=ecs.ContainerImage.from_registry(
+           "public.ecr.aws/nginx/nginx:stable"
+       ),
+       logging=ecs.LogDrivers.aws_logs(
+           stream_prefix="NginxContainer",
+       ),
+   )
+   ```
+   This will generate a task definition for running an nginx server.
 
-1. Go to the [S3 console](https://s3.console.aws.amazon.com/s3/buckets) and select your bucket. Find the file you just overwrote and select it.
+1. As the server also provides ports to which the load balancer needs to map, you also need to add port mappings:
+   ```python
+   nginx_container.add_port_mappings(
+       ecs.PortMapping(
+           container_port=80,
+       )
+   )
+   ```
 
-1. You will now see several properties of the file like the file ARN, its S3 URI (which you need for the high level aws cli s3 api), or an
-   object URL, which you would use to access the object via HTTPs. Since the bucket is not public, you will not be able to use this, though.
-   Also, there is a tab called "Versions" at the top. Click this to inspect all version of the given object. This feature can be very useful
-   to prevent files from being deleted accidentally.
+1. We can now bundle all of this into a load balanced Fargate service:
+   ```python
+   ecs_patterns.ApplicationLoadBalancedFargateService(
+       self,
+       "WorkshopService",
+       cluster=cluster,
+       task_definition=nginx_task_definition,
+       desired_count=2,
+       public_load_balancer=True,
+       listener_port=80,
+       task_subnets=ec2.SubnetSelection(
+           subnet_type=ec2.SubnetType.PUBLIC,
+       ),
+       assign_public_ip=True,
+   )
+   ```
+   We have to pick public subnets here, as we are using an image from the ECR public gallery. Normally, you would create
+   a new image on deploy and upload it to your private repository, but for this example, we keep it simple.
 
-1. Now lets try this out. Go back to your bucket objects overview. Select your test object and delete it. You will be prompted to confirm the
-   deletion and you have to enter *delete*. If the console prompts you to enter *permanently delete* there ist something *wrong*.
+1. Deploy your changes via
+   ```bash
+   npx cdk deploy
+   ```
 
-1. Now find the "Show versions" toggle next to the search bar and enable it. You will see, your object is
-   not gone but instead a delete marker has been created. To restore your object, you can select the delete marker and delete it 🤪.
-   This time you will be prompted to confirm with *permanently delete*. As a rule of thumb: if you delete a version of an object, it is gone for
-   good, therefore you should only do this if absolutely necessary (e.g., when you need to clean up a bucket completely before deleting it).
+1. Go to the [ECS console](https://eu-west-1.console.aws.amazon.com/ecs/v2/clusters) and select your cluster. In the
+   services tab you will be greeted by the service you just defined in code. There should be 2 of 2 tasks running (or
+   pending, if you are a fast clicker). Go to your service and check the "Networking" tab. There should be a load balancer
+   configured with a public DNS name. Open this in your browser and check that the web server you just deployed responds
+   to requests properly.
 
-1. Switch of the "Show versions" toggle and your file should re-appear.
+   You can also go to the tasks tab of your cluster and verify that there are 2 tasks running. Their health status is
+   unknown, though. This is because the nginx image does not provide a docker `HEALTHCHECK` on their side ([more about
+   health checks here](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_HealthCheck.html)).
 
+1. As for many other resources on AWS, we can also configure auto-scaling. In this example the auto-scaling engine will
+   try to achieve a CPU utilization of ~50%:
+   ```python
+   service.service.auto_scale_task_count(
+       max_capacity=4,
+       min_capacity=2,
+   ).scale_on_cpu_utilization(
+       "CpuScaling",
+       target_utilization_percent=50,
+   )
+   ```
+   Add this to your code and deploy again.
+
+1. You can inspect the auto scaling settings in your service in your "Configuration and tasks" tab.
+
+1. Questions:
+   * What happens, if you terminate one of the tasks belonging to the service?
+   * What happens, if your CPU utilization on one task would hit 100% and on the other 0%? Can you imagine a scenario
+     where this could happen?
+ 
 ---
 
 You can find the complete implementation of this lab [here](https://github.com/superluminar-io/compute-basics-workshop/tree/main/packages/lab4).
