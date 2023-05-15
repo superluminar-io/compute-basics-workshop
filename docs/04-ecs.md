@@ -263,14 +263,11 @@ Create an ECR cluster with Fargate support.
    times at the top right of the page. You can observe the task's last status and also its desired status. When the task
    stopped, check the logs in the "Logs" tab. There should be "Hello, world!" printed to the logs.
 
-### Questions
-1. Which permissions did you just grant and why?
-
 ## Playing with Versioning
 
 ### 📝 Task
 
-Delete and restore your object using bucket versioning.
+Use an ECS pattern to deploy a web server.
 
 ### 🔎 Hints
 - [What is object versioning?](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html)
