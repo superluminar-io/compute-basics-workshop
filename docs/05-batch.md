@@ -4,7 +4,7 @@
 
 - Create an AWS Batch compute environment and job queue
 - Create and submit a job defition
-- Use advanced features of AWS Batch, such as Array jobs and job dependencies
+- Use advanced features of AWS Batch, such as Spot Instances, array jobs and job dependencies
 
 ## Setup Lab
 As this lab is more or less disconnected from the previous labs, it makes sense to create a new project.
@@ -169,91 +169,53 @@ Add a job definition and run a job.
    npx cdk deploy
    ```
 
-1. Open the [batch console](https://eu-west-1.console.aws.amazon.com/batch/home?#job-definition)
+1. Open the [Batch console](https://eu-west-1.console.aws.amazon.com/batch/home?#job-definition). Select the definition you just created
+   and click on "Submit new job". Name your job, select the job definition and the job queue you created and click "Next". Nothing to add
+   on the next section so you can just click "Next" again. Review what you have configured and click on "Create job". You will be
+   forwarded to the details' page of your job.
 
+1. Open the [Batch dashboard](https://eu-west-1.console.aws.amazon.com/batch/home) in a new tab and scroll down to the "Compute environment
+   overview". Check the desired vCPUs - they should now be two. You can also open the [EC2 running instances overview](
+   https://eu-west-1.console.aws.amazon.com/ec2/home?#Instances:instanceState=running) in a separate tab to observe the state of the
+   instance that Batch launches for you. Switch around between the Batch console and the EC2 console, don't forget to hit refresh on the
+   job overview and the job queue view, as well as the the EC2 instances, to observe how your job is flowing through the system.
 
+## Spot Instances
 
+### 📝 Task
 
+Use Spot Instances instead of On-Demand instances to save money.
 
+### 🔎 Hints
 
+- [What are Spot Instances?](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html#spot-get-started)
+- [Spot Requests Overview](https://eu-west-1.console.aws.amazon.com/ec2/home?#SpotInstances:)
 
+### 🗺 Step-by-Step Guide
 
+1. Open
+   ```bash
+   batch_workshop/batch_workshop_stack.py
+   ```
 
-
-
-
-
-
-
-
-1. You can remove remove your repository and the `CfnOutput`, CDK will manage this for you.
-
-1. Now add the `DockerImageAsset` with a corresponding output:
+1. Find your compute environment and enable Spot Instances:
    ```python
-   asset = ecr_assets.DockerImageAsset(
+   compute_env = batch.ManagedEc2EcsComputeEnvironment(
        self,
-       "ECRAsset",
-       directory=path.join(path.dirname(__file__), "..", "docker")
-   )
-
-   CfnOutput(
-       self,
-       "ECRRepository",
-       value=asset.repository.repository_uri_for_tag(asset.image_uri),
+       "BatchComputeEnvironment",
+       vpc=vpc,
+       spot=True,
+       spot_bid_percentage=100,
    )
    ```
 
-1. Deploy your changes. You will see that the image is also pushed:
-   ```
-   [0%] start: Publishing 036bbda8ccada264b693ac2003d4e6ebb1f08f87daa34fd2c4b44ab1051fcd19:current_account-current_region
-   [50%] success: Published 63cebb1acf8865f17d67d1934c3677face55fc27d9af8370bc0a2b81f70709f3:current_account-current_region
-   The push refers to repository [<your account id>.dkr.ecr.eu-west-1.amazonaws.com/cdk-hnb659fds-container-assets-<your account id>-eu-west-1]
-   b7e0fa7bfe7f: Preparing
-   b7e0fa7bfe7f: Pushed
-   ```
+1. Deploy your changes and resubmit your job.
 
-1. 1. Deploy your changes and go to the [ECS console task definitions](https://eu-west-1.console.aws.amazon.com/ecs/v2/task-definitions).
-   Lets deploy our task. Select the task definition you just created and click "Deploy" -> "Run task". Choose your ECS cluster,
-   then select "Launch type". You can now select "FARGATE" from the drop-down. Other options would be EC2 or EXTERNAL (ECS Anywhere).
-   We do not have any EC2 instances or external servers registered to our cluster, so we go with FARGATE.
-   The default configuration for the deployment options will do, but we have to configure some networking. Here you
-   should select the VPC you created. Options:
-   * You can remove the private subnets and leave public IP turned on
-   * You could also remove the public subnets and turn off public IP assignment, but since the cluster is pulling images from ECR,
-     and the tasks interacts with ECS, logs to CloudWatch and pulls image layers from S3 you would need
-     interface/gateway endpoints for these services (ECR, ECR docker, ECS, CloudWatch Logs, and S3). If you want to do
-     this, you can add this code below your VPC initialization:
-     ```python
-     vpc.add_interface_endpoint(
-         "ECS",
-         service=ec2.InterfaceVpcEndpointAwsService.ECS,
-     )
-     vpc.add_interface_endpoint(
-         "ECR",
-         service=ec2.InterfaceVpcEndpointAwsService.ECR,
-     )
-     vpc.add_interface_endpoint(
-         "ECRDocker",
-         service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-     )
-     vpc.add_interface_endpoint(
-         "CloudWatchLogs",
-         service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
-     )
-     vpc.add_gateway_endpoint(
-         "S3",
-         service=ec2.GatewayVpcEndpointAwsService.S3,
-     )
-     ```
-     and deploy before continuing to run your task.
-   Now click "Create" at the bottom.
-
-1. From the list of tasks in the cluster, you can now click on your task to see more details. Hit refresh a couple of
-   times at the top right of the page. You can observe the task's last status and also its desired status. When the task
-   stopped, check the logs in the "Logs" tab. There should be "Hello, world!" printed to the logs.\
+1. Go to the [Spot Requests Overview](https://eu-west-1.console.aws.amazon.com/ec2/home?#SpotInstances:) and check if Batch is
+   requesting a Spot Instance for your job.
 
 ### Questions
-1. Where did your image go?
+- How much do you pay for the Spot Instance?
 
 ## Using Amazon Elastic Container Service (ECS)
 

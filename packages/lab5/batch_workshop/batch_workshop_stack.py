@@ -37,6 +37,8 @@ class BatchWorkshopStack(Stack):
             self,
             "BatchComputeEnvironment",
             vpc=vpc,
+            spot=True,
+            spot_bid_percentage=100,
         )
 
         job_queue = batch.JobQueue(
