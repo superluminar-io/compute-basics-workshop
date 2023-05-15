@@ -4,5 +4,6 @@
 - [Lab 2 - EC2](/02-ec2)
 - [Lab 3 - S3](/03-s3)
 - [Lab 4 - ECS](/04-ecs)
+- [Lab 5 - Batch](/05-batch)
 - [Lab 4 - Messaging](/messaging)
 - [What’s next?](/next)
