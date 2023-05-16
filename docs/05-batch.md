@@ -108,6 +108,7 @@ Create a Batch compute environment and a job queue.
        ]
    )
    ```
+   Change `BatchComputeEnvironment` and `BatchJobQueue` by appending, e.g., your name to tell it apart.
 
 1. Deploy the project via
    ```bash
@@ -164,6 +165,7 @@ Add a job definition and run a job.
        )
    )
    ```
+   Change `BatchJobDefinition` and append, e.g., your name to tell it apart.
 
 1. Deploy the project via
    ```bash
@@ -211,7 +213,7 @@ Use Spot Instances instead of On-Demand instances to save money.
    )
    ```
    Note that we also change the name, as an update to using spot instances is not supported and hence we want to replace
-   the cluster.
+   the cluster. Please also append your name to the `compute_environment_name` to avoid conflicts and confusion.
 
 1. Deploy your changes and resubmit your job.
 
@@ -240,7 +242,7 @@ Submit an array job.
    ```python
    job_definition = batch.EcsJobDefinition(
        self,
-       "BatchJobDefinition",
+       "BatchJobDefinition",  # your job definition's id will be a little different, if you added your name  # noqa: E501
        container=batch.EcsEc2ContainerDefinition(
            self,
            "BatchContainerDefinition",
@@ -273,6 +275,59 @@ Submit an array job.
 
 - How many jobs are started and in which order?
 - Where do you find the logs of job index 5?
+
+## Using job dependencies
+
+### 📝 Task
+
+Submit a job that depends on another job
+
+### 🔎 Hints
+- [What are job dependencies?](https://docs.aws.amazon.com/batch/latest/userguide/job_dependencies.html)
+
+### 🗺 Step-by-Step Guide
+
+1. Open `batch_workshop/batch_workshop.py`
+
+1. Add a second job definition:
+   ```python
+   sleep_job_definition = batch.EcsJobDefinition(
+       self,
+       "SleepBatchJobDefinition",
+       container=batch.EcsEc2ContainerDefinition(
+           self,
+           "SleepBatchContainerDefinition",
+           image=ecs.ContainerImage.from_registry("amazonlinux"),
+           command=[
+               "sh",
+               "-c",
+               "echo \"sleeping for 300 seconds\";"
+               "sleep 300;"
+               "echo \"hello world from array index $AWS_BATCH_JOB_ARRAY_INDEX!\"",  # noqa: E501
+           ],
+           memory=Size.mebibytes(512),
+           cpu=1,
+           logging=ecs.LogDriver.aws_logs(
+               stream_prefix="sleep",
+               log_retention=logs.RetentionDays.ONE_WEEK
+           )
+       )
+   )
+   ```
+   Change `SleepBatchJobDefinition` and append, e.g., your name to tell it apart.
+
+1. Deploy your changes.
+
+1. Go to [the job definitions](https://eu-west-1.console.aws.amazon.com/batch/home?#job-definition) and submit the sleep
+   job. After submitting, you will get a job id in the "Job details" panel. Copy it and go to [the job definitions](
+   https://eu-west-1.console.aws.amazon.com/batch/home?#job-definition), again. Now start submitting the other job
+   definition and click on "Add job dependency". Paste the sleep job id into the job id field and submit the job.
+
+1. Observe the jobs flowing through your system.
+
+### Questions
+- In which state it your dependent job after submitting?
+- What happens if the sleep job fails?
 
 ---
 

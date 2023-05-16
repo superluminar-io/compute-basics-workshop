@@ -54,7 +54,6 @@ class BatchWorkshopStack(Stack):
             ]
         )
 
-        # TODO: use bash script instead of command
         job_definition = batch.EcsJobDefinition(
             self,
             "BatchJobDefinition",
@@ -67,6 +66,28 @@ class BatchWorkshopStack(Stack):
                 cpu=1,
                 logging=ecs.LogDriver.aws_logs(
                     stream_prefix="batch",
+                    log_retention=logs.RetentionDays.ONE_WEEK
+                )
+            )
+        )
+        sleep_job_definition = batch.EcsJobDefinition(
+            self,
+            "SleepBatchJobDefinition",
+            container=batch.EcsEc2ContainerDefinition(
+                self,
+                "SleepBatchContainerDefinition",
+                image=ecs.ContainerImage.from_registry("amazonlinux"),
+                command=[
+                    "sh",
+                    "-c",
+                    "echo \"sleeping for 300 seconds\";"
+                    "sleep 300;"
+                    "echo \"hello world from array index $AWS_BATCH_JOB_ARRAY_INDEX!\"",  # noqa: E501
+                ],
+                memory=Size.mebibytes(512),
+                cpu=1,
+                logging=ecs.LogDriver.aws_logs(
+                    stream_prefix="sleep",
                     log_retention=logs.RetentionDays.ONE_WEEK
                 )
             )
