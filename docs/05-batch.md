@@ -9,11 +9,11 @@
 ## Setup Lab
 As this lab is more or less disconnected from the previous labs, it makes sense to create a new project.
 
-1. Just create a new folder `batch-workshop` next to your `workshop` root folder.
+1. Just create a new folder `batch_workshop` next to your `workshop` root folder.
 
 1. Then go to the folder and initialize a new cdk project:
 ```bash
-cd batch-workshop
+cd batch_workshop
 npx cdk init app --language=python
 ```
 
