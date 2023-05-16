@@ -91,6 +91,7 @@ Create a Batch compute environment and a job queue.
    compute_env = batch.ManagedEc2EcsComputeEnvironment(
        self,
        "BatchComputeEnvironment",
+       compute_environment_name="ComputeEnvironment",
        vpc=vpc,
    )
    ```
@@ -203,11 +204,14 @@ Use Spot Instances instead of On-Demand instances to save money.
    compute_env = batch.ManagedEc2EcsComputeEnvironment(
        self,
        "BatchComputeEnvironment",
+       compute_environment_name="ComputeEnvironmentWithSpotInstances",
        vpc=vpc,
        spot=True,
        spot_bid_percentage=100,
    )
    ```
+   Note that we also change the name, as an update to using spot instances is not supported and hence we want to replace
+   the cluster.
 
 1. Deploy your changes and resubmit your job.
 
@@ -217,104 +221,58 @@ Use Spot Instances instead of On-Demand instances to save money.
 ### Questions
 - How much do you pay for the Spot Instance?
 
-## Using Amazon Elastic Container Service (ECS)
+## Using array jobs
 
 ### 📝 Task
 
-Create ECS service and run public nginx in a service.
+Submit an array job.
 
 ### 🔎 Hints
-- [What are ECS services](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html)
-- [CDK ECS patterns documentation](https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ecs_patterns/README.html)
+- [What are array jobs?](https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html)
 
 ### 🗺 Step-by-Step Guide
 1. Open
    ```bash
-   ecs_workshop/ecs_workshop_cdk_assets_stack.py
+   batch_workshop/batch_workshop_stack.py
    ```
-1. We can now use the ECS pattern library to create a load balanced Fargate service. Add this at the end of your
-   constructor:
-   ```python
-   nginx_task_definition = ecs.FargateTaskDefinition(
-       self,
-       "NginxTask",
-       cpu=256,
-       memory_limit_mib=512,
-   )
-   nginx_container = nginx_task_definition.add_container(
-       "NginxContainer",
-       image=ecs.ContainerImage.from_registry(
-           "public.ecr.aws/nginx/nginx:stable"
-       ),
-       logging=ecs.LogDrivers.aws_logs(
-           stream_prefix="NginxContainer",
-       ),
-   )
-   ```
-   This will generate a task definition for running an nginx server.
 
-1. As the server also provides ports to which the load balancer needs to map, you also need to add port mappings:
+1. Adjust your job definition to echo the `AWS_BATCH_JOB_ARRAY_INDEX`:
    ```python
-   nginx_container.add_port_mappings(
-       ecs.PortMapping(
-           container_port=80,
+   job_definition = batch.EcsJobDefinition(
+       self,
+       "BatchJobDefinition",
+       container=batch.EcsEc2ContainerDefinition(
+           self,
+           "BatchContainerDefinition",
+           image=ecs.ContainerImage.from_registry("amazonlinux"),
+           command=["sh", "-c", "echo \"hello world from array index $AWS_BATCH_JOB_ARRAY_INDEX!\""],  # noqa: E501
+           memory=Size.mebibytes(512),
+           cpu=1,
+           logging=ecs.LogDriver.aws_logs(
+               stream_prefix="batch",
+               log_retention=logs.RetentionDays.ONE_WEEK
+           )
        )
    )
    ```
-
-1. We can now bundle all of this into a load balanced Fargate service:
-   ```python
-   ecs_patterns.ApplicationLoadBalancedFargateService(
-       self,
-       "WorkshopService",
-       cluster=cluster,
-       task_definition=nginx_task_definition,
-       desired_count=2,
-       public_load_balancer=True,
-       listener_port=80,
-       task_subnets=ec2.SubnetSelection(
-           subnet_type=ec2.SubnetType.PUBLIC,
-       ),
-       assign_public_ip=True,
-   )
-   ```
-   We have to pick public subnets here, as we are using an image from the ECR public gallery. Normally, you would create
-   a new image on deploy and upload it to your private repository, but for this example, we keep it simple.
 
 1. Deploy your changes via
    ```bash
    npx cdk deploy
    ```
 
-1. Go to the [ECS console](https://eu-west-1.console.aws.amazon.com/ecs/v2/clusters) and select your cluster. In the
-   services tab you will be greeted by the service you just defined in code. There should be 2 of 2 tasks running (or
-   pending, if you are a fast clicker). Go to your service and check the "Networking" tab. There should be a load balancer
-   configured with a public DNS name. Open this in your browser and check that the web server you just deployed responds
-   to requests properly.
+1. Open the [Batch console](https://eu-west-1.console.aws.amazon.com/batch/home?#job-definition). Select your updated
+   job definition you and click on "Submit new job". Name your job, select the job definition and the job queue you
+   created and set an array size of 10. Click "Next". Nothing to add on the next section so you can just click "Next"
+   again. Review what you have configured and click on "Create job". You will be forwarded to the details' page of your
+   job.
 
-   You can also go to the tasks tab of your cluster and verify that there are 2 tasks running. Their health status is
-   unknown, though. This is because the nginx image does not provide a docker `HEALTHCHECK` on their side ([more about
-   health checks here](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_HealthCheck.html)).
+1. You can follow along the job flow like before.
 
-1. As for many other resources on AWS, we can also configure auto-scaling. In this example the auto-scaling engine will
-   try to achieve a CPU utilization of ~50%:
-   ```python
-   service.service.auto_scale_task_count(
-       max_capacity=4,
-       min_capacity=2,
-   ).scale_on_cpu_utilization(
-       "CpuScaling",
-       target_utilization_percent=50,
-   )
-   ```
-   Add this to your code and deploy again.
+### Questions
 
-1. You can inspect the auto scaling settings in your service in your "Configuration and tasks" tab.
-
-1. Questions:
-   * What happens, if you terminate one of the tasks belonging to the service?
-   * What happens, if your CPU utilization on one task would hit 100% and on the other 0%? Can you imagine a scenario
-     where this could happen?
+- How many jobs are started and in which order?
+- Where do you find the logs of job index 5?
 
 ---
 

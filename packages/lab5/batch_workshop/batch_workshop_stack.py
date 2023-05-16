@@ -36,9 +36,11 @@ class BatchWorkshopStack(Stack):
         compute_env = batch.ManagedEc2EcsComputeEnvironment(
             self,
             "BatchComputeEnvironment",
+            compute_environment_name="ComputeEnvironmentWithSpotInstances",
             vpc=vpc,
             spot=True,
             spot_bid_percentage=100,
+            allocation_strategy=batch.AllocationStrategy.SPOT_CAPACITY_OPTIMIZED,  # noqa: E501
         )
 
         job_queue = batch.JobQueue(
@@ -52,6 +54,7 @@ class BatchWorkshopStack(Stack):
             ]
         )
 
+        # TODO: use bash script instead of command
         job_definition = batch.EcsJobDefinition(
             self,
             "BatchJobDefinition",
@@ -59,7 +62,7 @@ class BatchWorkshopStack(Stack):
                 self,
                 "BatchContainerDefinition",
                 image=ecs.ContainerImage.from_registry("amazonlinux"),
-                command=["echo", "hello world"],
+                command=["sh", "-c", "echo \"hello world from array index $AWS_BATCH_JOB_ARRAY_INDEX!\""],  # noqa: E501
                 memory=Size.mebibytes(512),
                 cpu=1,
                 logging=ecs.LogDriver.aws_logs(
