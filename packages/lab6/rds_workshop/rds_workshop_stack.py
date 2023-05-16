@@ -99,7 +99,7 @@ class RdsWorkshopStack(Stack):
         service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
             "PhpMyAdminService",
-            cluster=mysql_cluster,
+            cluster=ecs_cluster,
             task_definition=phpmyadmin_task_definition,
             desired_count=1,
             public_load_balancer=True,
