@@ -1,8 +1,6 @@
 # RDS
 
 <!-- Plan:
-- Cluster aufsetzen
-- was im Cluster laufen lassen
 - Backup aufsetzen
 - Cluster runternehmen + vom Backup wiederherstellen -->
 
@@ -87,7 +85,7 @@ Create a RDS Aurora database cluster.
 
 1. Create a RDS Aurora database cluster:
    ```python
-   cluster = rds.DatabaseCluster(
+   mysql_cluster = rds.DatabaseCluster(
        self,
        "WorkshopDatabase",
        engine=rds.DatabaseClusterEngine.aurora_mysql(
@@ -116,220 +114,128 @@ Create a RDS Aurora database cluster.
 ### Questions
 - After rebooting, which instance is the writer instance, now?
 
-
-
-
-## Job Definition
+## Connect from ECS Service
 
 ### 📝 Task
-Add a job definition and run a job.
+
+Connect to your RDS database cluster from phpMyAdmin running on ECS.
 
 ### 🔎 Hints
-- [What are Job Definitions?](https://docs.aws.amazon.com/batch/latest/userguide/job_definitions.html)
-- [What are Jobs?](https://docs.aws.amazon.com/batch/latest/userguide/jobs.html)
-- [Job Definiton CDK documentation](https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_batch_alpha/EcsJobDefinition.html)
+- [pmpMyAdmin image](https://gallery.ecr.aws/bitnami/phpmyadmin)
 
 ### 🗺 Step-by-Step Guide
+
 1. Open
    ```bash
-   batch_workshop/batch_workshop_stack.py
+   rds_workshop/rds_workshop_stack.py
    ```
 
-1. Import `aws_ecs`, `aws_logs` and `Size`:
+1. Import `aws_ecs`, `aws_ecs_patterns` and `aws_secretsmanager`:
    ```python
    from aws_cdk import (
-       Size,
        Stack,
-       aws_batch_alpha as batch,
        aws_ec2 as ec2,
        aws_ecs as ecs,
-       aws_logs as logs,
+       aws_ecs_patterns as ecs_patterns,
+       aws_rds as rds,
+       aws_secretsmanager as secret,
    )
    ```
 
-1. Create a job definition:
+1. Add the following code to create an ECS cluster, ECS service, and connect the service to your database:
    ```python
-   job_definition = batch.EcsJobDefinition(
+   ecs_cluster = ecs.Cluster(
        self,
-       "BatchJobDefinition",
-       container=batch.EcsEc2ContainerDefinition(
-           self,
-           "BatchContainerDefinition",
-           image=ecs.ContainerImage.from_registry("amazonlinux"),
-           command=["echo", "hello world"],
-           memory=Size.mebibytes(512),
-           cpu=1,
-           logging=ecs.LogDriver.aws_logs(
-               stream_prefix="batch",
-               log_retention=logs.RetentionDays.ONE_WEEK
-           )
-       )
-   )
-   ```
-   Change `BatchJobDefinition` and append, e.g., your name to tell it apart.
-
-1. Deploy the project via
-   ```bash
-   npx cdk deploy
-   ```
-
-1. Open the [Batch console](https://eu-west-1.console.aws.amazon.com/batch/home?#job-definition). Select the definition you just created
-   and click on "Submit new job". Name your job, select the job definition and the job queue you created and click "Next". Nothing to add
-   on the next section so you can just click "Next" again. Review what you have configured and click on "Create job". You will be
-   forwarded to the details' page of your job.
-
-1. Open the [Batch dashboard](https://eu-west-1.console.aws.amazon.com/batch/home) in a new tab and scroll down to the "Compute environment
-   overview". Check the desired vCPUs - they should now be two. You can also open the [EC2 running instances overview](
-   https://eu-west-1.console.aws.amazon.com/ec2/home?#Instances:instanceState=running) in a separate tab to observe the state of the
-   instance that Batch launches for you. Switch around between the Batch console and the EC2 console, don't forget to hit refresh on the
-   job overview and the job queue view, as well as the the EC2 instances, to observe how your job is flowing through the system.
-
-## Spot Instances
-
-### 📝 Task
-
-Use Spot Instances instead of On-Demand instances to save money.
-
-### 🔎 Hints
-
-- [What are Spot Instances?](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html#spot-get-started)
-- [Spot Requests Overview](https://eu-west-1.console.aws.amazon.com/ec2/home?#SpotInstances:)
-
-### 🗺 Step-by-Step Guide
-
-1. Open
-   ```bash
-   batch_workshop/batch_workshop_stack.py
-   ```
-
-1. Find your compute environment and enable Spot Instances:
-   ```python
-   compute_env = batch.ManagedEc2EcsComputeEnvironment(
-       self,
-       "BatchComputeEnvironment",
-       compute_environment_name="ComputeEnvironmentWithSpotInstances",
+       "WorkshopCluster",
        vpc=vpc,
-       spot=True,
-       spot_bid_percentage=100,
    )
-   ```
-   Note that we also change the name, as an update to using spot instances is not supported and hence we want to replace
-   the cluster. Please also append your name to the `compute_environment_name` to avoid conflicts and confusion.
 
-1. Deploy your changes and resubmit your job.
-
-1. Go to the [Spot Requests Overview](https://eu-west-1.console.aws.amazon.com/ec2/home?#SpotInstances:) and check if Batch is
-   requesting a Spot Instance for your job.
-
-### Questions
-- How much do you pay for the Spot Instance?
-
-## Using array jobs
-
-### 📝 Task
-
-Submit an array job.
-
-### 🔎 Hints
-- [What are array jobs?](https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html)
-
-### 🗺 Step-by-Step Guide
-1. Open
-   ```bash
-   batch_workshop/batch_workshop_stack.py
-   ```
-
-1. Adjust your job definition to echo the `AWS_BATCH_JOB_ARRAY_INDEX`:
-   ```python
-   job_definition = batch.EcsJobDefinition(
+   phpmyadmin_task_definition = ecs.FargateTaskDefinition(
        self,
-       "BatchJobDefinition",  # your job definition's id will be a little different, if you added your name  # noqa: E501
-       container=batch.EcsEc2ContainerDefinition(
-           self,
-           "BatchContainerDefinition",
-           image=ecs.ContainerImage.from_registry("amazonlinux"),
-           command=["sh", "-c", "echo \"hello world from array index $AWS_BATCH_JOB_ARRAY_INDEX!\""],  # noqa: E501
-           memory=Size.mebibytes(512),
-           cpu=1,
-           logging=ecs.LogDriver.aws_logs(
-               stream_prefix="batch",
-               log_retention=logs.RetentionDays.ONE_WEEK
-           )
+       "PhpMyAdminTask",
+       cpu=256,
+       memory_limit_mib=512,
+   )
+
+   mysql_secret = secret.Secret.from_secret_name_v2(
+       self,
+       "WorkshopDatabaseSecret",
+       mysql_cluster.secret.secret_name,
+   )
+
+   phpmyadmin_container = phpmyadmin_task_definition.add_container(
+      "PhpMyAdminContainer",
+      image=ecs.ContainerImage.from_registry(
+            "public.ecr.aws/bitnami/phpmyadmin:latest"
+      ),
+      logging=ecs.LogDrivers.aws_logs(
+            stream_prefix="phpmyadmin",
+      ),
+      secrets={
+            "DATABASE_HOST": ecs.Secret.from_secrets_manager(
+               mysql_secret,
+               field="host",
+            ),
+            "DATABASE_USER": ecs.Secret.from_secrets_manager(
+               mysql_secret,
+               field="username",
+            ),
+            "DATABASE_PASSWORD": ecs.Secret.from_secrets_manager(
+               mysql_secret,
+               field="password",
+            ),
+      },
+      environment={
+            "DATABASE_ENABLE_SSL": "yes",
+      }
+   )
+   phpmyadmin_container.add_port_mappings(
+       ecs.PortMapping(
+           container_port=8080,
        )
    )
-   ```
 
-1. Deploy your changes via
-   ```bash
-   npx cdk deploy
-   ```
-
-1. Open the [Batch console](https://eu-west-1.console.aws.amazon.com/batch/home?#job-definition). Select your updated
-   job definition you and click on "Submit new job". Name your job, select the job definition and the job queue you
-   created and set an array size of 10. Click "Next". Nothing to add on the next section so you can just click "Next"
-   again. Review what you have configured and click on "Create job". You will be forwarded to the details' page of your
-   job.
-
-1. You can follow along the job flow like before.
-
-### Questions
-
-- How many jobs are started and in which order?
-- Where do you find the logs of job index 5?
-
-## Using job dependencies
-
-### 📝 Task
-
-Submit a job that depends on another job
-
-### 🔎 Hints
-- [What are job dependencies?](https://docs.aws.amazon.com/batch/latest/userguide/job_dependencies.html)
-
-### 🗺 Step-by-Step Guide
-
-1. Open `batch_workshop/batch_workshop.py`
-
-1. Add a second job definition:
-   ```python
-   sleep_job_definition = batch.EcsJobDefinition(
+   service = ecs_patterns.ApplicationLoadBalancedFargateService(
        self,
-       "SleepBatchJobDefinition",
-       container=batch.EcsEc2ContainerDefinition(
-           self,
-           "SleepBatchContainerDefinition",
-           image=ecs.ContainerImage.from_registry("amazonlinux"),
-           command=[
-               "sh",
-               "-c",
-               "echo \"sleeping for 300 seconds\";"
-               "sleep 300;"
-               "echo \"hello world from array index $AWS_BATCH_JOB_ARRAY_INDEX!\"",  # noqa: E501
-           ],
-           memory=Size.mebibytes(512),
-           cpu=1,
-           logging=ecs.LogDriver.aws_logs(
-               stream_prefix="sleep",
-               log_retention=logs.RetentionDays.ONE_WEEK
-           )
-       )
+       "PhpMyAdminService",
+       cluster=ecs_cluster,
+       task_definition=phpmyadmin_task_definition,
+       desired_count=1,
+       public_load_balancer=True,
+       listener_port=80,
+       task_subnets=ec2.SubnetSelection(
+           subnet_type=ec2.SubnetType.PUBLIC,
+       ),
+       assign_public_ip=True,
    )
+
+   mysql_cluster.connections.allow_default_port_from(service.service)
    ```
-   Change `SleepBatchJobDefinition` and append, e.g., your name to tell it apart.
 
 1. Deploy your changes.
 
-1. Go to [the job definitions](https://eu-west-1.console.aws.amazon.com/batch/home?#job-definition) and submit the sleep
-   job. After submitting, you will get a job id in the "Job details" panel. Copy it and go to [the job definitions](
-   https://eu-west-1.console.aws.amazon.com/batch/home?#job-definition), again. Now start submitting the other job
-   definition and click on "Add job dependency". Paste the sleep job id into the job id field and submit the job.
+1. Find your cluster in the [ECS console](https://eu-west-1.console.aws.amazon.com/ecs/v2/clusters) and select it. Then
+   select the service and wait until there are no pending tasks anymore. Go to the networking tab - on the right side you will
+   find load balancer's properties. Find "DNS names" and open the address. You now see the phpMyAdmin Dashboard.
 
-1. Observe the jobs flowing through your system.
+## Backup and restore
 
-### Questions
-- In which state it your dependent job after submitting?
-- What happens if the sleep job fails?
+### 📝 Task
+
+Add data to your database, create a snapshot from your RDS cluster and create a new database from your snapshot.
+
+### 🔎 Hints
+- [How to create a DB snapshot](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_CreateSnapshot.html)
+
+### 🗺 Step-by-Step Guide
+
+1. Open the web console and take a look at [the RDS Dashboard](https://eu-west-1.console.aws.amazon.com/rds/home?r#databases:),
+   select your cluster. Choose "Take snapshot" from the "Actions" menu, give it a meaningful name and click on "Take snapshot".
+
+1. Wait for the snapshot to complete. You might want to get a coffee now, this can take a little time.
+
+1.
 
 ---
 
-You can find the complete implementation of this lab [here](https://github.com/superluminar-io/compute-basics-workshop/tree/main/packages/lab5).
+You can find the complete implementation of this lab [here](https://github.com/superluminar-io/compute-basics-workshop/tree/main/packages/lab6).
