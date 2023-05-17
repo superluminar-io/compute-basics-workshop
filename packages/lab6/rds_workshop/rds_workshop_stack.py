@@ -88,6 +88,9 @@ class RdsWorkshopStack(Stack):
                     mysql_secret,
                     field="password",
                 ),
+            },
+            environment={
+                "DATABASE_ENABLE_SSL": "yes",
             }
         )
         phpmyadmin_container.add_port_mappings(
