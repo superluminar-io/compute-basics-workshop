@@ -109,3 +109,5 @@ class RdsWorkshopStack(Stack):
             ),
             assign_public_ip=True,
         )
+
+        mysql_cluster.connections.allow_default_port_from(service.service)
