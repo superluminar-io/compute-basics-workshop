@@ -5,6 +5,7 @@
 - Use Elastic Container Registry (ECR) to store Images
 - Use CDK to automatically pack images
 - Create an Elastic Container Service (ECS) cluster
+- Run tasks and services
 
 ## Setup Lab
 As this lab is more or less disconnected from the previous labs, it makes sense to create a new project.

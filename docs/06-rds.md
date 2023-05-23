@@ -23,7 +23,7 @@ npx cdk init app --language=python
 
 1. Open `./app.py` and rename your stack again, i.e., change `RdsWorkshopStack(app, "RdsWorkshopStack",` to something different, e.g., append your name.
 
-1. Now there is one last thing to do. As we will also need a VPC setup for this lab, open './rds_workshop/rds_workshop_stack.py'
+1. Now there is one last thing to do. As we will also need a VPC setup for this lab, open `./rds_workshop/rds_workshop_stack.py`
    and create a VPC with a public and a private with egress subnet:
    ```python
    from aws_cdk import (
