@@ -217,6 +217,8 @@ Connect to your RDS database cluster from phpMyAdmin running on ECS.
    select the service and wait until there are no pending tasks anymore. Go to the networking tab - on the right side you will
    find load balancer's properties. Find "DNS names" and open the address. You now see the phpMyAdmin Dashboard.
 
+1. For our next lab, create a table in the database `workshop` and populate it with a couple of rows.
+
 ## Backup and restore
 
 ### 📝 Task
@@ -233,7 +235,10 @@ Add data to your database, create a snapshot from your RDS cluster and create a 
 
 1. Wait for the snapshot to complete. You might want to get a coffee now, this can take a little time.
 
-1.
+1. Go to [your snapshots](https://eu-west-1.console.aws.amazon.com/rds/home?#snapshots-list:). You could now select the snapshot and restore it.
+   This would create a new database. But we want to do this via CDK to be able to track changes in code.
+
+1. 
 
 ---
 
