@@ -1,4 +1,7 @@
+from typing import cast
 from aws_cdk import (
+    CfnOutput,
+    RemovalPolicy,
     Stack,
     aws_ec2 as ec2,
     aws_ecs as ecs,
@@ -61,11 +64,10 @@ class RdsWorkshopStack(Stack):
             memory_limit_mib=512,
         )
 
-        mysql_secret = secret.Secret.from_secret_name_v2(
-            self,
-            "WorkshopDatabaseSecret",
-            mysql_cluster.secret.secret_name,
-        )
+        mysql_secret = cast(secret.ISecret, mysql_cluster.secret)
+        # mysql_secret.apply_removal_policy(RemovalPolicy.RETAIN)
+
+        # CfnOutput(self, "SecretArn", value=mysql_secret.secret_arn)
 
         phpmyadmin_container = phpmyadmin_task_definition.add_container(
             "PhpMyAdminContainer",

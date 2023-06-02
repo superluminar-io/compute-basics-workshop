@@ -3,8 +3,8 @@ import os
 
 import aws_cdk as cdk
 
-from rds_workshop.rds_workshop_restore_stack import RdsWorkshopRestoreStack as RdsWorkshopStack  # noqa: E501
-# from rds_workshop.rds_workshop_stack import RdsWorkshopStack
+from rds_workshop.rds_workshop_stack import RdsWorkshopStack
+# from rds_workshop.rds_workshop_restore_stack import RdsWorkshopStack
 
 
 app = cdk.App()

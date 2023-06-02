@@ -156,38 +156,36 @@ Connect to your RDS database cluster from phpMyAdmin running on ECS.
        memory_limit_mib=512,
    )
 
-   mysql_secret = secret.Secret.from_secret_name_v2(
-       self,
-       "WorkshopDatabaseSecret",
-       mysql_cluster.secret.secret_name,
-   )
+   mysql_secret = cast(secret.ISecret, mysql_cluster.secret)
+   CfnOutput(self, "SecretArn", value=mysql_secret.secret_arn)
 
    phpmyadmin_container = phpmyadmin_task_definition.add_container(
-      "PhpMyAdminContainer",
-      image=ecs.ContainerImage.from_registry(
-            "public.ecr.aws/bitnami/phpmyadmin:latest"
-      ),
-      logging=ecs.LogDrivers.aws_logs(
-            stream_prefix="phpmyadmin",
-      ),
-      secrets={
-            "DATABASE_HOST": ecs.Secret.from_secrets_manager(
+       "PhpMyAdminContainer",
+       image=ecs.ContainerImage.from_registry(
+           "public.ecr.aws/bitnami/phpmyadmin:latest"
+       ),
+       logging=ecs.LogDrivers.aws_logs(
+           stream_prefix="phpmyadmin",
+       ),
+       secrets={
+           "DATABASE_HOST": ecs.Secret.from_secrets_manager(
                mysql_secret,
                field="host",
-            ),
-            "DATABASE_USER": ecs.Secret.from_secrets_manager(
+           ),
+           "DATABASE_USER": ecs.Secret.from_secrets_manager(
                mysql_secret,
                field="username",
-            ),
-            "DATABASE_PASSWORD": ecs.Secret.from_secrets_manager(
+           ),
+           "DATABASE_PASSWORD": ecs.Secret.from_secrets_manager(
                mysql_secret,
                field="password",
-            ),
-      },
-      environment={
-            "DATABASE_ENABLE_SSL": "yes",
-      }
+           ),
+       },
+       environment={
+           "DATABASE_ENABLE_SSL": "yes",
+       }
    )
+
    phpmyadmin_container.add_port_mappings(
        ecs.PortMapping(
            container_port=8080,
@@ -210,6 +208,7 @@ Connect to your RDS database cluster from phpMyAdmin running on ECS.
 
    mysql_cluster.connections.allow_default_port_from(service.service)
    ```
+   Setting the deletion policy is not required, but we will reuse the secret in the next step and need to retain it.
 
 1. Deploy your changes.
 
@@ -227,18 +226,68 @@ Add data to your database, create a snapshot from your RDS cluster and create a 
 
 ### 🔎 Hints
 - [How to create a DB snapshot](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_CreateSnapshot.html)
+- [CDK `DatabaseClusterFromSnapshot`](https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_rds/DatabaseClusterFromSnapshot.html)
 
 ### 🗺 Step-by-Step Guide
+
+__Disclaimer: this lab will include a lot of waiting time for destroying and setting up RDS__
 
 1. Open the web console and take a look at [the RDS Dashboard](https://eu-west-1.console.aws.amazon.com/rds/home?r#databases:),
    select your cluster. Choose "Take snapshot" from the "Actions" menu, give it a meaningful name and click on "Take snapshot".
 
-1. Wait for the snapshot to complete. You might want to get a coffee now, this can take a little time.
+1. Wait for the snapshot to complete
+
+1. Destroy the stack you deployed before via `npx cdk destroy`. This will take some time.
 
 1. Go to [your snapshots](https://eu-west-1.console.aws.amazon.com/rds/home?#snapshots-list:). You could now select the snapshot and restore it.
    This would create a new database. But we want to do this via CDK to be able to track changes in code.
 
-1. 
+1. First create a new file next to the workshop stack and name it `rds_workshop/rds_workshop_restore_stack.py`. Copy the contents of
+   `rds_workshop/rds_workshop_stack.py`.
+
+1. Now find the `DatabaseCluster` initialization and replace it by the `DatabaseClusterFromSnapshot` construct. You will need the ARN of the
+   snapshot for this, or at least the name. In out example we use the name to demonstrate the constructions of ARNs in CDK:
+   ```python
+   mysql_cluster = rds.DatabaseClusterFromSnapshot(
+       self,
+       "WorkshopDatabaseFromSnapshot",
+       engine=rds.DatabaseClusterEngine.aurora_mysql(
+           version=rds.AuroraMysqlEngineVersion.VER_3_01_0
+       ),
+       instance_props=rds.InstanceProps(
+           vpc_subnets=ec2.SubnetSelection(
+               subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+           ),
+           vpc=vpc
+       ),
+       default_database_name="workshop",
+       snapshot_identifier=Arn.format(
+           components={
+               "service": "rds",
+               "resource": "cluster-snapshot",
+               "resourceName": <Your snapshot name here>,
+               "arnFormat": ArnFormat.COLON_RESOURCE_NAME,
+           },
+           stack=Stack.of(self),
+       ),
+       snapshot_credentials=rds.SnapshotCredentials.from_generated_secret(
+           "admin",
+       ),
+   )
+   ```
+   Note that you cannot change the username for the database. It is taken from the snapshot. A new password and other connection info will
+   be generated into a secret like in the previous section, though.
+
+1. In `app.py` you can now change the import to reference the new stack. The class name is the same, as you copied it.
+   ```python
+   from rds_workshop.rds_workshop_restore_stack as RdsWorkshopStack
+   ```
+
+1. Now go ahead and deploy via `npx cdk deploy`. This will also take some time, as it will recreate all of the network. We didn't separate this
+   out or used any other technique of speeding this up.
+
+1. When the stack is finally deployed, go find the load balancer's DNS name as done before. You should now be able to open phpMyAdmin again
+   and see all the tables and data you created before you took the snapshot.
 
 ---
 

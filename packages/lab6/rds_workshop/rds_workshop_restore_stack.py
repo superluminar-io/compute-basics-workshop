@@ -1,4 +1,7 @@
+from typing import cast
 from aws_cdk import (
+    Arn,
+    ArnFormat,
     Stack,
     aws_ec2 as ec2,
     aws_ecs as ecs,
@@ -9,7 +12,7 @@ from aws_cdk import (
 from constructs import Construct
 
 
-class RdsWorkshopRestoreStack(Stack):
+class RdsWorkshopStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -46,7 +49,18 @@ class RdsWorkshopRestoreStack(Stack):
                 vpc=vpc
             ),
             default_database_name="workshop",
-            snapshot_identifier="arn:aws:rds:eu-west-1:084274240787:cluster-snapshot:test-snapshot-9-58",  # noqa: E501
+            snapshot_identifier=Arn.format(
+                components={
+                    "service": "rds",
+                    "resource": "cluster-snapshot",
+                    "resourceName": "test",
+                    "arnFormat": ArnFormat.COLON_RESOURCE_NAME,
+                },
+                stack=Stack.of(self),
+            ),
+            snapshot_credentials=rds.SnapshotCredentials.from_generated_secret(
+                "admin",
+            ),
         )
 
         ecs_cluster = ecs.Cluster(
@@ -62,11 +76,7 @@ class RdsWorkshopRestoreStack(Stack):
             memory_limit_mib=512,
         )
 
-        mysql_secret = secret.Secret.from_secret_name_v2(
-            self,
-            "WorkshopDatabaseSecret",
-            mysql_cluster.secret.secret_name,
-        )
+        mysql_secret = cast(secret.ISecret, mysql_cluster.secret)
 
         phpmyadmin_container = phpmyadmin_task_definition.add_container(
             "PhpMyAdminContainer",
