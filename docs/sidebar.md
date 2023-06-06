@@ -6,4 +6,3 @@
 - [Lab 4 - ECS](/04-ecs)
 - [Lab 5 - Batch](/05-batch)
 - [Lab 6 - RDS](/06-rds)
-- [What’s next?](/next)
