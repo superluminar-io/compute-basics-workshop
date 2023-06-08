@@ -20,21 +20,24 @@ npx cdk init app --language=python
 
 1. Open `./app.py` and rename your stack again, i.e., change `EcsWorkshopStack(app, "EcsWorkshopStack",` to something different, e.g., append your name.
 
-1. Now there is one last thing to do. As we will also need a VPC setup for this lab, open './ecs_workshop/ecs_workshop_stack.py'
-   and copy over the VPC setup code from the previous lab. The file should look like this:
+1. Now there is one last thing to do. As we will also need a VPC setup for this lab, open `./ecs_workshop/ecs_workshop_stack.py`
+   and copy over the VPC setup code from the previous lab.\
+\
+The file should look like this:
+
    ```python
    from aws_cdk import (
        Stack,
        aws_ec2 as ec2,
    )
    from constructs import Construct
-
-
+   
+   
    class EcsWorkshopStack(Stack):
-
+   
        def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
-           super().__init__(scope, construct_id, **kwargs)
-
+           super().__init__(scope, construct_id, **kwargs)   
+   
            vpc = ec2.Vpc(
                self,
                "WorkshopVPC",
