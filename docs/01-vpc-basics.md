@@ -41,7 +41,7 @@ Create a fresh AWS CDK app.
    ```
    ⚠️You might run into the following error:
 
-   ![cdk bootstrap error](./media/rest-api/cdk-bootstrap-error.png)
+   ![cdk bootstrap error](media/cdk-bootstrap-error.png)
 
    If this is the case, you need to bootstrap your environment first by running:
 
