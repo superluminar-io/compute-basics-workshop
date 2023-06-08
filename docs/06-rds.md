@@ -120,7 +120,7 @@ Create a RDS Aurora database cluster.
 Connect to your RDS database cluster from phpMyAdmin running on ECS.
 
 ### 🔎 Hints
-- [pmpMyAdmin image](https://gallery.ecr.aws/bitnami/phpmyadmin)
+- [phpMyAdmin image](https://gallery.ecr.aws/bitnami/phpmyadmin)
 
 ### 🗺 Step-by-Step Guide
 
