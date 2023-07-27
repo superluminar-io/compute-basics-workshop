@@ -88,7 +88,7 @@ Create an ECR repository and upload an image.
 
 1. Create an ECR repository with a custom name to avoid conflicts with other participants:
    ```python
-   ecr.Repository(
+   repository = ecr.Repository(
        self,
        "WorkshopECR",
        repository_name="workshop-ecr"  # please rename this to avoid conflict with others in the workshop # noqa E501
@@ -188,46 +188,6 @@ Use a CDK `DockerImageAsset` to let CDK manage the bundling.
    b7e0fa7bfe7f: Pushed
    ```
 
-1. 1. Deploy your changes and go to the [ECS console task definitions](https://eu-west-1.console.aws.amazon.com/ecs/v2/task-definitions).
-   Lets deploy our task. Select the task definition you just created and click "Deploy" -> "Run task". Choose your ECS cluster,
-   then select "Launch type". You can now select "FARGATE" from the drop-down. Other options would be EC2 or EXTERNAL (ECS Anywhere).
-   We do not have any EC2 instances or external servers registered to our cluster, so we go with FARGATE.
-   The default configuration for the deployment options will do, but we have to configure some networking. Here you
-   should select the VPC you created. Options:
-   * You can remove the private subnets and leave public IP turned on
-   * You could also remove the public subnets and turn off public IP assignment, but since the cluster is pulling images from ECR,
-     and the tasks interacts with ECS, logs to CloudWatch and pulls image layers from S3 you would need
-     interface/gateway endpoints for these services (ECR, ECR docker, ECS, CloudWatch Logs, and S3). If you want to do
-     this, you can add this code below your VPC initialization:
-     ```python
-     vpc.add_interface_endpoint(
-         "ECS",
-         service=ec2.InterfaceVpcEndpointAwsService.ECS,
-     )
-     vpc.add_interface_endpoint(
-         "ECR",
-         service=ec2.InterfaceVpcEndpointAwsService.ECR,
-     )
-     vpc.add_interface_endpoint(
-         "ECRDocker",
-         service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-     )
-     vpc.add_interface_endpoint(
-         "CloudWatchLogs",
-         service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
-     )
-     vpc.add_gateway_endpoint(
-         "S3",
-         service=ec2.GatewayVpcEndpointAwsService.S3,
-     )
-     ```
-     and deploy before continuing to run your task.
-   Now click "Create" at the bottom.
-
-1. From the list of tasks in the cluster, you can now click on your task to see more details. Hit refresh a couple of
-   times at the top right of the page. You can observe the task's last status and also its desired status. When the task
-   stopped, check the logs in the "Logs" tab. There should be "Hello, world!" printed to the logs.\
-
 ### Questions
 1. Where did your image go?
 
@@ -246,6 +206,26 @@ Create ECS service and run public nginx in a service.
    ```bash
    ecs_workshop/ecs_workshop_cdk_assets_stack.py
    ```
+   
+1. Import `aws_ecs` and `aws_ecs_patterns`:
+   ```python
+   from aws_cdk import (
+       Stack,
+       aws_ec2 as ec2,
+       aws_ecr as ecr,
+       aws_ecs as ecs,
+       aws_ecs_patterns as ecs_patterns
+   )
+   ```
+1. Now we have to create an ECS Cluster, where our application will run in:
+   ```python
+    
+        self,
+        "WorkshopCluster",
+        vpc=vpc,
+    )
+   ```
+
 1. We can now use the ECS pattern library to create a load balanced Fargate service. Add this at the end of your
    constructor:
    ```python
