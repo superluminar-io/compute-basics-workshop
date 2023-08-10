@@ -258,7 +258,7 @@ Create ECS service and run public nginx in a service.
 
 1. We can now bundle all of this into a load balanced Fargate service:
    ```python
-   ecs_patterns.ApplicationLoadBalancedFargateService(
+   fargate_service = ecs_patterns.ApplicationLoadBalancedFargateService(
        self,
        "WorkshopService",
        cluster=cluster,
@@ -293,7 +293,7 @@ Create ECS service and run public nginx in a service.
 1. As for many other resources on AWS, we can also configure auto-scaling. In this example the auto-scaling engine will
    try to achieve a CPU utilization of ~50%:
    ```python
-   service.service.auto_scale_task_count(
+   fargate_service.service.auto_scale_task_count(
        max_capacity=4,
        min_capacity=2,
    ).scale_on_cpu_utilization(
