@@ -219,11 +219,11 @@ Create ECS service and run public nginx in a service.
    ```
 1. Now we have to create an ECS Cluster, where our application will run in:
    ```python
-    
-        self,
-        "WorkshopCluster",
-        vpc=vpc,
-    )
+   cluster = ecs.Cluster(
+         self,
+         "WorkshopCluster",
+         vpc=vpc,
+   )
    ```
 
 1. We can now use the ECS pattern library to create a load balanced Fargate service. Add this at the end of your
